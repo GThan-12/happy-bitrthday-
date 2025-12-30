@@ -1,0 +1,1264 @@
+:root {
+  --primary: #051fc2;
+  --secondary: #ff005c;
+  --pop: #fff200;
+  --bg: #f0f0f0;
+  --text: #1a1a1a;
+  --font-pixel: "Pixelify Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* --- UI UTILS --- */
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  transition: 0.5s ease-in-out;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  z-index: 10;
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  border: 3px solid var(--text);
+  padding: 12px 25px;
+  font-family: var(--font-pixel);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 5px 5px 0px var(--text);
+  transition: 0.1s;
+  margin-top: 15px;
+  display: inline-block;
+  z-index: 50;
+  user-select: none;
+  position: relative;
+}
+
+.btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0px var(--text);
+}
+
+.btn-pop {
+  background: var(--secondary);
+  color: var(--pop);
+}
+
+/* --- NAVIGATION BUTTONS --- */
+.btn-back {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  background: white;
+  color: var(--text);
+  border: 3px solid var(--text);
+  padding: 8px 15px;
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  box-shadow: 4px 4px 0 var(--text);
+  cursor: pointer;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.btn-back:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--text);
+}
+
+.music-toggle {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 2000;
+  background: white;
+  border: 3px solid black;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 black;
+  transition: transform 0.2s;
+}
+
+.music-toggle:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 black;
+}
+
+/* --- 1. LOCK SCREEN --- */
+#screen-lock {
+  background: var(--primary);
+  color: white;
+}
+
+.lock-container {
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 30px;
+}
+
+.lock-container:active {
+  transform: scale(0.9);
+}
+
+.lock-icon {
+  font-size: 5rem;
+  color: var(--pop);
+  filter: drop-shadow(5px 5px 0px rgba(0, 0, 0, 0.3));
+}
+
+.lock-text {
+  margin-top: 20px;
+  font-family: var(--font-pixel);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+
+/* --- 2. INTRO --- */
+#screen-intro {
+  background: black;
+}
+
+.intro-title {
+  font-family: var(--font-pixel);
+  font-size: 3rem;
+  color: var(--primary);
+  text-align: center;
+  line-height: 1;
+}
+
+/* --- 3. GALLERY --- */
+#screen-gallery {
+  background: #ffeaa7;
+  overflow: hidden;
+}
+
+.collect-badge {
+  position: absolute;
+  top: 80px;
+  left: 30px;
+  background: var(--pop);
+  border: 2px solid black;
+  padding: 5px 15px;
+  font-family: var(--font-pixel);
+  font-weight: bold;
+  transform: rotate(-3deg);
+  z-index: 5;
+}
+
+.film-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  overflow-x: auto;
+  max-width: 100vw;
+  align-items: center;
+  justify-content: center;
+}
+
+.film-strip {
+  background: black;
+  padding: 15px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border-left: 5px dashed white;
+  border-right: 5px dashed white;
+  box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.2);
+  transition: 0.3s;
+}
+
+.film-strip:nth-child(odd) {
+  transform: rotate(-2deg);
+}
+
+.film-strip:nth-child(even) {
+  transform: rotate(2deg);
+}
+
+.film-strip:hover {
+  transform: rotate(0deg) scale(1.05) !important;
+  z-index: 20;
+}
+
+.photo-frame {
+  width: 290px;
+  height: 340px;
+  background: white;
+  padding: 10px 10px 40px 10px;
+  will-change: transform, opacity;
+  overflow: hidden;
+  /* Agar gambar tidak keluar bingkai */
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%);
+  transition: 0.5s;
+  image-rendering: -webkit-optimize-contrast;
+  /* Untuk Safari/Chrome */
+  image-rendering: crisp-edges;
+  /* Standar baru */
+  object-position: center;
+  /* Gambar fokus di tengah */
+}
+
+.photo-frame:hover img {
+  filter: grayscale(0%);
+}
+
+@media (max-width:768px) {
+  #screen-gallery h2 {
+    font-size: 1.5rem;
+    margin-top: 60px;
+    margin-bottom: 10px;
+  }
+  
+  .film-container {
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .film-strip {
+    padding: 8px 4px;
+    gap: 8px;
+  }
+  
+  .photo-frame {
+    width: 130px;
+    height: 170px;
+    padding: 5px 5px 20px 5px;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+}
+
+/* --- 4. ENVELOPE (UPDATED POSITION) --- */
+/* BAGIAN INI SUDAH DIBENARKAN AGAR LEBIH KE BAWAH */
+#screen-letter {
+  background: var(--secondary);
+  perspective: 1000px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* Padding top ini menurunkan "visual center" ke bawah,
+  aman dari tombol Back */
+  padding-top: 80px;
+  width: 100%;
+  height: 100%;
+}
+
+#screen-letter h2 {
+  margin-bottom: 30px;
+  z-index: 20;
+  position: relative;
+  text-align: center;
+}
+
+.envelope {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  background: #dcdcdc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--text);
+  transition: 0.3s;
+  margin: 0;
+}
+
+.envelope-flap {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 0;
+  height: 0;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  border-top: 110px solid #bfbfbf;
+  transform-origin: top;
+  transition: 0.6s;
+  z-index: 5;
+}
+
+.envelope.open .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+.paper {
+  position: absolute;
+  bottom: 0;
+  width: 280px;
+  height: 250px;
+  background: white;
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  transition: 0.5s;
+  z-index: 2;
+  border: 2px solid var(--text);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+.envelope.open .paper {
+  transform: translateY(-120px);
+  z-index: 10;
+  height: 380px;
+}
+
+.letter-content {
+  opacity: 0;
+  transition: 1s;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.envelope.open .letter-content {
+  opacity: 1;
+  transition-delay: 0.5s;
+}
+
+.tap-hint {
+  margin-top: 40px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* --- 5. CAKE --- */
+#screen-cake {
+  background: white;
+}
+
+.cam-border {
+  border: 5px solid var(--primary);
+  padding: 5px;
+  background: var(--pop);
+  box-shadow: 10px 10px 0 var(--text);
+  width: 320px;
+  height: 260px;
+  position: relative;
+}
+
+#webcam {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 300px;
+  height: 240px;
+  transform: scaleX(-1);
+  object-fit: cover;
+  background: black;
+  z-index: 1;
+  filter: pixelate(2px);
+}
+
+#canvas {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 300px;
+  height: 240px;
+  transform: scaleX(-1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cake-area {
+  position: relative;
+  margin-top: -60px;
+  z-index: 20;
+  width: 300px;
+  height: 250px;
+  pointer-events: none;
+}
+
+.cake-img {
+  width: 200px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.match-img {
+  width: 60px;
+  position: absolute;
+  display: none;
+  z-index: 30;
+}
+
+.status-pill {
+  margin-top: 20px;
+  background: var(--text);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-family: var(--font-pixel);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--primary);
+}
+
+/* --- 6. PHOTOBOOTH (CLEAN & PROFESSIONAL) --- */
+#screen-photobooth {
+  background: var(--pop);
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.photostrip-wrapper {
+  background: white;
+  padding: 10px;
+  border: 4px solid var(--text);
+  box-shadow: 8px 8px 0 var(--secondary);
+  position: relative;
+  margin-bottom: 10px;
+  width: auto;
+  max-width: 90vw;
+  display: inline-block;
+}
+
+.photostrip-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 2px dashed var(--primary);
+  padding: 8px;
+  background: #fff;
+}
+
+.strip-header {
+  font-family: var(--font-pixel);
+  color: var(--text);
+  font-size: 1.2rem;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.slot-container {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+
+.photo-slot {
+  display: block;
+  background: #eee;
+  border: 3px solid #ccc;
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+}
+
+@media (max-width:768px) {
+  .photo-slot {
+    width: 170px;
+    height: 128px;
+  }
+  
+  .strip-header {
+    font-size: 1rem;
+  }
+  
+  .strip-footer {
+    font-size: 0.7rem;
+  }
+  
+  .btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .sticker {
+    font-size: 2rem;
+  }
+}
+
+.photo-slot.active {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px var(--pop);
+  animation: pulseBorder 1s infinite;
+}
+
+.photo-slot.filled {
+  border-color: var(--text);
+}
+
+/* OVERLAY TEXT DIHAPUS SESUAI PERMINTAAN */
+
+.strip-footer {
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 5px;
+  color: var(--secondary);
+}
+
+.sticker {
+  position: absolute;
+  font-size: 2.5rem;
+  pointer-events: none;
+  z-index: 10;
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.1));
+}
+
+.s-1 {
+  top: -15px;
+  right: -15px;
+  transform: rotate(15deg);
+}
+
+.s-2 {
+  bottom: -15px;
+  left: -15px;
+  transform: rotate(-15deg);
+}
+
+@keyframes pulseBorder {
+  0% {
+    box-shadow: 0 0 0 2px var(--pop);
+  }
+  
+  50% {
+    box-shadow: 0 0 0 4px var(--pop);
+  }
+  
+  100% {
+    box-shadow: 0 0 0 2px var(--pop);
+  }
+}
+
+.btn-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  z-index: 20;
+}
+
+/* --- TAMBAHAN UNTUK SLIDE BUNGA --- */
+#screen-flower {
+  background-color: #fff;
+  /* Pastikan background hitam */
+  display: flex;
+  align-items: flex-end;
+  /* Agar bunga tumbuh dari bawah */
+  justify-content: center;
+  overflow: hidden;
+  /* Agar animasi tidak bikin scrollbar muncul */
+}
+
+/* Pastikan elemen di dalam slide bunga tidak terhalang */
+#screen-flower .flowers {
+  z-index: 20;
+  margin-bottom: 50px;
+  /* Jarak sedikit dari bawah */
+}
+
+#screen-flower .night {
+  z-index: 10;
+}
+
+/* --- PERBAIKAN POSISI BUNGA (FIX) --- */
+
+/* 1. Pastikan wadah slide menjadi acuan posisi */
+#screen-flower {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  /* Background hitam */
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* 2. Paksa kumpulan bunga ke tengah-tengah persis */
+#screen-flower .flowers {
+  position: absolute;
+  bottom: 50px;
+  /* Jarak dari bawah layar */
+  left: 50%;
+  /* Titik mulai di tengah layar */
+  transform: translateX(-50%) scale(0.9);
+  /* Geser balik 50% agar presisi di tengah */
+  width: auto;
+  height: auto;
+  z-index: 20;
+}
+
+/* 3. Perbaiki background malam (bintang-bintang) agar tidak lari */
+#screen-flower .night {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  /* Reset posisi bawaan yang mungkin bikin error */
+}
+
+/* --- FIX UNTUK TOMBOL MAKE A WISH --- */
+/* Memastikan tombol selalu berada di lapisan paling atas, bahkan di atas lipatan amplop */
+#screen-letter .btn-pop {
+  z-index: 500 !important;
+  pointer-events: auto !important;
+  /* Memaksa tombol agar selalu bisa diklik */
+  transform: translateZ(10px);
+  /* Trik agar browser merender ini di layer terpisah */
+}
+
+/* Memastikan kertas tidak menghalangi klik saat tertutup */
+.envelope .paper {
+  pointer-events: auto;
+}
+
+/* --- PERBAIKAN Z-INDEX & KLIK --- */
+
+/* 1. Matikan interaksi pada tutup amplop agar klik tembus ke kertas/tombol */
+.envelope-flap {
+  pointer-events: none;
+}
+
+/* 2. Pastikan kertas bisa menerima klik */
+.paper {
+  pointer-events: auto;
+}
+
+/* 3. Paksa tombol Make a Wish agar super kuat prioritas kliknya */
+#btnWish {
+  cursor: pointer;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 9999 !important;
+  /* Angka z-index harus sangat tinggi */
+}
+
+/* Cari bagian ini di CSS kamu */
+
+.screen {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* --- TAMBAHKAN/PASTIKAN 3 BARIS INI ADA --- */
+  opacity: 0;
+  visibility: hidden;
+  /* Menyembunyikan elemen dari jangkauan klik */
+  pointer-events: none;
+  /* PENTING: Memastikan layar non-aktif TIDAK BISA DIKLIK */
+  transition: all 0.8s ease-in-out;
+  /* Transisi tetap halus */
+}
+
+.screen.active {
+  display: flex;
+  /* --- TAMBAHKAN/PASTIKAN 3 BARIS INI ADA --- */
+  opacity: 1;
+  visibility: visible;
+  /* Munculkan kembali */
+  pointer-events: auto;
+  /* PENTING: Izinkan klik HANYA pada layar aktif */
+  z-index: 2;
+}
+
+/* --- Setting Slide Kembang Api --- */
+#screen-fireworks {
+  background: black;
+  /* Background hitam biar transisi mulus */
+  padding: 0;
+  /* Hapus padding biar full layar */
+  overflow: hidden;
+  /* Hilangkan scrollbar ganda */
+}
+
+/* --- Setting Iframe --- */
+.fireworks-frame {
+  width: 100vw;
+  /* Lebar 100% layar device */
+  height: 100vh;
+  /* Tinggi 100% layar device */
+  border: none;
+  /* Hilangkan garis bingkai */
+  display: block;
+  /* Agar tidak ada celah di bawah */
+}
+
+/* Memastikan tombol back tetap terlihat di atas kembang api */
+#screen-fireworks .btn-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+  /* Lapisan paling atas */
+}
+
+
+/* --- SCREEN CAPSULE --- */
+#screen-capsule {
+  background-color: #86ff4e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Container agar pas di tengah */
+.terminal-container {
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 20px;
+  /* Padding putih agar saat didownload ada border putihnya */
+  padding: 10px;
+  background-color: #fff;
+  border: 2px solid #000;
+}
+
+/* Jendela Terminal Retro */
+.terminal-window {
+  background-color: #1a1a1a;
+  border: 2px solid #333;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  font-family: 'Courier New', monospace;
+  color: #00ff41;
+  /* Hijau Matrix */
+}
+
+.terminal-header {
+  background: #e0e0e0;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #333;
+}
+
+.cmd-title {
+  color: #000;
+  font-weight: bold;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.win-btns .btn-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #555;
+  margin-left: 4px;
+}
+
+.red {
+  background: #ff5f56;
+}
+
+.yellow {
+  background: #ffbd2e;
+}
+
+.green {
+  background: #27c93f;
+}
+
+.terminal-body {
+  padding: 20px;
+}
+
+.meta-info p {
+  margin: 5px 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.dashed-line {
+  border: 0;
+  border-top: 1px dashed #00ff41;
+  margin: 15px 0;
+  opacity: 0.5;
+}
+
+/* Textarea yang menyatu dengan desain */
+#futureNote {
+  width: 100%;
+  height: 180px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+
+#futureNote::placeholder {
+  color: rgba(0, 255, 65, 0.4);
+}
+
+.signature {
+  margin-top: 15px;
+  text-align: right;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.keep-safe {
+  font-weight: bold;
+  color: #FFD700;
+  /* Kuning dikit biar kontras */
+  margin-top: 5px;
+}
+
+/* Tombol Simpan */
+.capsule-controls {
+  width: 100%;
+  max-width: 420px;
+}
+
+.btn-main {
+  width: 100%;
+  padding: 15px;
+  background: #FF00DE;
+  color: white;
+  font-family: 'Pixelify Sans', sans-serif;
+  font-size: 1.2rem;
+  border: 4px solid white;
+  box-shadow: 6px 6px 0px #0033FF;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-main:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #0033FF;
+}
+
+/* --- TAMBAHAN UNTUK FIX BUG TEXT KEPOTONG --- */
+
+/* Gaya untuk versi cetak/gambar */
+.note-print-view {
+  display: none;
+  /* Sembunyi dulu */
+  width: 100%;
+  min-height: 150px;
+  /* Minimal segini */
+  height: auto;
+  /* Otomatis manjang ke bawah! */
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  /* Agar Enter/Baris baru terbaca */
+  word-wrap: break-word;
+  /* Agar kata panjang turun ke bawah */
+  border: none;
+  background: transparent;
+}
+
+/* KELAS KHUSUS SAAT MODE CETAK */
+/* Saat kelas ini aktif, textarea hilang, versi cetak muncul */
+.printing-mode #futureNote {
+  display: none;
+}
+
+.printing-mode #futureNote-print {
+  display: block;
+}
+
+#screen-music {
+  background: var(--pop);
+  /* Kuning */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.vinyl-container {
+  width: 250px;
+  height: 250px;
+  background: black;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 5px solid white;
+  box-shadow: 10px 10px 0 var(--secondary);
+  animation: spin 5s linear infinite;
+  margin-bottom: 40px;
+}
+
+.vinyl-label {
+  width: 100px;
+  height: 100px;
+  background: var(--secondary);
+  /* Pink */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.music-info {
+  text-align: center;
+  background: white;
+  padding: 20px;
+  border: 3px solid black;
+  width: 80%;
+  max-width: 300px;
+  box-shadow: 8px 8px 0 black;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #ddd;
+  border: 2px solid black;
+  margin: 15px 0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 50%;
+  height: 100%;
+  background: var(--primary);
+}
+
+.controls {
+  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* --- Style untuk Toggle Timer --- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+  /* Warna ungu tema kamu */
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* --- Style untuk Countdown Overlay --- */
+#countdown-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8rem;
+  font-family: var(--font-pixel);
+  color: white;
+  text-shadow: 4px 4px 0 #000;
+  z-index: 50;
+  pointer-events: none;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* --- TOGGLE SWITCH STYLE --- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+/* Sembunyikan checkbox asli */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Bagian background slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  /* Warna abu-abu saat OFF */
+  transition: .4s;
+  border-radius: 34px;
+}
+
+/* Bagian lingkaran knob */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+/* Warna saat ON (Diaktifkan) */
+input:checked + .slider {
+  background-color: #ff0055;
+  /* Gunakan warna tema kamu (Pink/Merah) */
+}
+
+/* Warna focus shadow (opsional) */
+input:focus + .slider {
+  box-shadow: 0 0 1px #ff0055;
+}
+
+/* Gerakan knob saat ON */
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Style untuk text label di samping toggle */
+.timer-option span {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* --- COUNTDOWN OVERLAY STYLE --- */
+#countdown-overlay {
+  position: absolute;
+  /* Posisi menumpuk di atas video */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Benar-benar di tengah */
+  font-size: 8rem;
+  /* Ukuran sangat besar */
+  font-family: 'Pixelify Sans', cursive;
+  /* Menggunakan font pixel tema */
+  font-weight: 700;
+  color: #fff200;
+  /* Warna Kuning Neon */
+  /* Outline hitam agar terbaca jelas di atas video apapun */
+  text-shadow: 4px 4px 0 #000,
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000;
+  z-index: 100;
+  /* Pastikan di layer paling atas */
+  pointer-events: none;
+  /* Agar klik tembus ke bawah (tidak menghalangi) */
+  /* Animasi muncul (Pop) */
+  animation: popNumber 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Keyframes untuk animasi pop */
+@keyframes popNumber {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+#screen-photobooth .btn-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+  /* Batasi lebar agar rapi di desktop */
+  margin: 0 auto;
+}
+
+#saveOptions .btn {
+  font-size: 0.9rem;
+  /* Sedikit mengecilkan font tombol save agar muat */
+  padding: 10px;
+}
+
+/* --- 1. REVISI LAYOUT TOMBOL (HORIZONTAL) --- */
+#saveOptions {
+  display: none;
+  /* Default hidden */
+  flex-direction: row;
+  /* Berjejer ke samping */
+  justify-content: center;
+  gap: 10px;
+  /* Jarak antar tombol */
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Tombol kecil di dalam baris saveOptions */
+#saveOptions .btn {
+  flex: 1;
+  /* Lebar rata */
+  padding: 10px 5px;
+  /* Padding lebih kecil biar muat */
+  font-size: 0.8rem;
+  /* Font dikecilkan sedikit */
+  white-space: nowrap;
+  /* Teks jangan turun baris */
+  min-width: 0;
+  /* Mencegah overflow flex item */
+}
+
+/* --- 2. REVISI POSISI TIMER (POJOK KANAN ATAS SLOT) --- */
+.slot-container {
+  position: relative;
+  /* Wajib! Agar timer bisa diposisikan relatif terhadap kotak ini */
+}
+
+#countdown-overlay {
+  position: absolute;
+  top: 5px;
+  /* Jarak dari atas */
+  right: 5px;
+  /* Jarak dari kanan (Pojok Kanan Atas) */
+  transform: none;
+  /* Hapus centering sebelumnya */
+  /* Style Tetap KUNING TEGAS (Original) */
+  font-size: 3.5rem;
+  /* Ukuran disesuaikan (tidak sebesar sebelumnya) */
+  font-family: 'Pixelify Sans', cursive;
+  font-weight: 700;
+  color: #fff200;
+  /* Kuning Neon */
+  /* Outline Hitam Tebal agar terbaca jelas */
+  text-shadow: 3px 3px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  z-index: 50;
+  pointer-events: none;
+  display: none;
+  /* Hidden by default */
+}

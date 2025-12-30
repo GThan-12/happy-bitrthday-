@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saturn~</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #000000;
+        user-select: none;
+        font-family: sans-serif;
+      }
+      #input_video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: scaleX(-1);
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+      }
+      #instructions {
+        display: none;
+      }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <video id="input_video" playsinline></video>
+    <div id="instructions"></div>
+
+    <script>
+      // ============================================
+      // SETUP GLOBAL
+      // ============================================
+      let scene, camera, renderer, composer;
+      let saturnGroup, planetMesh, ringParticles, starField;
+      let handX = 0,
+        handY = 0;
+      let targetZoom = 17;
+
+      // Jumlah partikel (tetap tinggi untuk detail)
+      const PARTICLE_COUNT = 230000;
+
+      function initThree() {
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+        camera = new THREE.PerspectiveCamera(
+          45,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          2000
+        );
+        camera.position.z = 40;
+        camera.position.y = 10;
+        camera.lookAt(0, 0, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Tone Mapping
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.8;
+
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // Bloom (Glow)
+        const renderScene = new THREE.RenderPass(scene, camera);
+        const bloomPass = new THREE.UnrealBloomPass(
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          1.5,
+          0.4,
+          0.85
+        );
+        bloomPass.strength = 0.35;
+        bloomPass.radius = 0.5;
+        bloomPass.threshold = 0.2;
+
+        composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+
+        saturnGroup = new THREE.Group();
+        saturnGroup.rotation.z = (26.7 * Math.PI) / 180;
+        saturnGroup.rotation.x = (15 * Math.PI) / 180;
+        scene.add(saturnGroup);
+
+        createPlanet();
+        createScientificRings();
+        createStars();
+
+        // Pencahayaan
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.05);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        sunLight.position.set(100, 20, 50);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
+
+        const rimLight = new THREE.SpotLight(0xffebc4, 2.0);
+        rimLight.position.set(-50, 10, -30);
+        rimLight.lookAt(0, 0, 0);
+        scene.add(rimLight);
+      }
+
+      // ============================================
+      // PLANET
+      // ============================================
+      function createHighResSaturnTexture() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 1024;
+        canvas.height = 512;
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "#dcd2b1";
+        ctx.fillRect(0, 0, 1024, 512);
+
+        const bands = [
+          { y: 0.05, h: 0.15, c: "#8a7e66" },
+          { y: 0.2, h: 0.1, c: "#cbbba0" },
+          { y: 0.35, h: 0.05, c: "#b5a383" },
+          { y: 0.45, h: 0.02, c: "#d4c7ad" },
+          { y: 0.5, h: 0.1, c: "#e8e1d3" },
+          { y: 0.65, h: 0.05, c: "#bfaf8b" },
+          { y: 0.8, h: 0.15, c: "#91846e" },
+        ];
+
+        bands.forEach((b) => {
+          const grad = ctx.createLinearGradient(
+            0,
+            b.y * 512,
+            0,
+            (b.y + b.h) * 512
+          );
+          grad.addColorStop(0, "rgba(0,0,0,0)");
+          grad.addColorStop(0.2, b.c);
+          grad.addColorStop(0.8, b.c);
+          grad.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, b.y * 512, 1024, b.h * 512);
+        });
+
+        const imageData = ctx.getImageData(0, 0, 1024, 512);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const noise = (Math.random() - 0.5) * 8;
+          data[i] += noise;
+          data[i + 1] += noise;
+          data[i + 2] += noise;
+        }
+        ctx.putImageData(imageData, 0, 0);
+        return new THREE.CanvasTexture(canvas);
+      }
+
+      function createPlanet() {
+        const geometry = new THREE.SphereGeometry(4, 64, 64);
+        const texture = createHighResSaturnTexture();
+
+        const material = new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.75,
+          metalness: 0.0,
+          bumpMap: texture,
+          bumpScale: 0.015,
+        });
+        planetMesh = new THREE.Mesh(geometry, material);
+        planetMesh.castShadow = true;
+        planetMesh.receiveShadow = true;
+        saturnGroup.add(planetMesh);
+      }
+
+      // ============================================
+      // CINCIN (SCIENTIFIC)
+      // ============================================
+      function createScientificRings() {
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const colors = [];
+        // Kita tidak lagi butuh originalPos untuk animasi rotasi sederhana
+
+        const cIce = new THREE.Color(0xfffce6);
+        const cDust = new THREE.Color(0x8a8479);
+        const cHaze = new THREE.Color(0xaabfcf);
+        const R = 4.0;
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          let radius = 0;
+          let zoneType = "";
+          const rand = Math.random();
+
+          if (rand < 0.05) {
+            radius = (1.11 + Math.random() * (1.23 - 1.11)) * R;
+            zoneType = "D";
+          } else if (rand < 0.15) {
+            radius = (1.23 + Math.random() * (1.52 - 1.23)) * R;
+            zoneType = "C";
+          } else if (rand < 0.65) {
+            radius = (1.52 + Math.random() * (1.95 - 1.52)) * R;
+            zoneType = "B";
+          } else if (rand < 0.9) {
+            radius = (2.02 + Math.random() * (2.26 - 2.02)) * R;
+            zoneType = "A";
+          } else if (rand < 0.92) {
+            radius = (2.32 + (Math.random() - 0.5) * 0.02) * R;
+            zoneType = "F";
+          } else {
+            radius = (2.5 + Math.random() * 2.5) * R;
+            zoneType = "E";
+          }
+
+          const angle = Math.random() * Math.PI * 2;
+          let spreadY = (Math.random() - 0.5) * 0.05;
+          if (zoneType === "E" || zoneType === "G") spreadY *= 6.0;
+
+          const x = Math.cos(angle) * radius;
+          const y = spreadY;
+          const z = Math.sin(angle) * radius;
+
+          positions.push(x, y, z);
+
+          let pColor = cIce.clone();
+          let brightness = 1.0;
+          const groove = Math.sin(radius * 80.0);
+          const fineStructure = 0.7 + 0.3 * groove;
+
+          if (zoneType === "D") {
+            pColor = cDust.clone();
+            brightness = 0.3 * fineStructure;
+          } else if (zoneType === "C") {
+            pColor = cDust.clone().lerp(cIce, 0.3);
+            brightness = 0.5 * fineStructure;
+          } else if (zoneType === "B") {
+            pColor = cIce.clone();
+            brightness = 1.0 * fineStructure;
+          } else if (zoneType === "A") {
+            pColor = cIce.clone().lerp(cDust, 0.2);
+            if (radius > 2.18 * R && radius < 2.2 * R) brightness *= 0.1;
+            else brightness *= 0.9 * fineStructure;
+          } else if (zoneType === "F") {
+            pColor = cIce.clone();
+            brightness = 0.8;
+          } else if (zoneType === "E") {
+            pColor = cHaze.clone();
+            const fade = 1.0 - (radius - 2.5 * R) / (2.5 * R);
+            brightness = 0.2 * fade;
+          }
+
+          pColor.multiplyScalar(brightness * (0.8 + Math.random() * 0.4));
+          colors.push(pColor.r, pColor.g, pColor.b);
+        }
+
+        geometry.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(positions, 3)
+        );
+        geometry.setAttribute(
+          "color",
+          new THREE.Float32BufferAttribute(colors, 3)
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext("2d");
+        const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        grad.addColorStop(0, "rgba(255,255,255,1)");
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 32, 32);
+        const sprite = new THREE.CanvasTexture(canvas);
+
+        const material = new THREE.PointsMaterial({
+          size: 0.08,
+          map: sprite,
+          vertexColors: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          transparent: true,
+          opacity: 0.9,
+        });
+
+        ringParticles = new THREE.Points(geometry, material);
+        saturnGroup.add(ringParticles);
+      }
+
+      function createStars() {
+        const geo = new THREE.BufferGeometry();
+        const pos = [];
+        for (let i = 0; i < 5000; i++) {
+          pos.push(
+            (Math.random() - 0.5) * 800,
+            (Math.random() - 0.5) * 800,
+            (Math.random() - 0.5) * 800
+          );
+        }
+        geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+        const mat = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 0.3,
+          transparent: true,
+          opacity: 0.8,
+        });
+        starField = new THREE.Points(geo, mat);
+        scene.add(starField);
+      }
+
+      // ============================================
+      // HAND TRACKING
+      // ============================================
+      function initHandTracking() {
+        const video = document.getElementById("input_video");
+        const hands = new Hands({
+          locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+        });
+        hands.setOptions({
+          maxNumHands: 1,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+        hands.onResults((results) => {
+          if (
+            results.multiHandLandmarks &&
+            results.multiHandLandmarks.length > 0
+          ) {
+            const lm = results.multiHandLandmarks[0];
+            handX = (lm[9].x - 0.5) * 4;
+            handY = (lm[9].y - 0.5) * 2;
+
+            const wrist = lm[0];
+            const mid = lm[9];
+            const size = Math.sqrt(
+              Math.pow(wrist.x - mid.x, 2) + Math.pow(wrist.y - mid.y, 2)
+            );
+            let targetZ = 40 - size * 80;
+            targetZoom = Math.max(12, Math.min(80, targetZ));
+          }
+        });
+        const cam = new Camera(video, {
+          onFrame: async () => {
+            await hands.send({ image: video });
+          },
+          width: 640,
+          height: 480,
+        });
+        cam.start();
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Kontrol Tangan
+        saturnGroup.rotation.y += (handX - saturnGroup.rotation.y) * 0.05;
+        saturnGroup.rotation.x += (handY * 0.5 - saturnGroup.rotation.x) * 0.05;
+        camera.position.z += (targetZoom - camera.position.z) * 0.05;
+        camera.lookAt(0, 0, 0);
+
+        // 1. ROTASI PLANET
+        if (planetMesh) planetMesh.rotation.y += 0.005;
+
+        // 2. ROTASI CINCIN (KE KANAN / CLOCKWISE)
+        // Menggunakan nilai negatif (-) agar tekstur bergerak ke kanan (visual flow)
+        if (ringParticles) {
+          ringParticles.rotation.y += 0.002;
+        }
+
+        // Rotasi Bintang
+        starField.rotation.y -= 0.0001;
+        composer.render();
+      }
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      window.onload = function () {
+        initThree();
+        initHandTracking();
+        animate();
+      };
+    </script>
+  </body>
+</html>

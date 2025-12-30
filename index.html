@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>PROJECT: TWENTY</title>
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Pixelify+Sans:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="flowers.css" />
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <audio id="bgm" loop>
+      <source
+        src="assets/LEE SUHYUN - Your Letter (연의 편지).mp3"
+        type="audio/mpeg"
+      />
+    </audio>
+    <div class="music-toggle" onclick="toggleMusic()">
+      <i class="fas fa-music"></i>
+    </div>
+
+    <div id="screen-lock" class="screen active">
+      <div class="lock-container" onclick="unlockSystem()">
+        <i class="fas fa-lock lock-icon" id="lockIcon"></i>
+      </div>
+      <div class="lock-text">TAP TO UNLOCK</div>
+    </div>
+
+    <div id="screen-intro" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-intro', 'screen-lock')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+      <div class="video-wrapper">
+        <h1 class="intro-title">
+          WELCOME<br />TO<br /><span style="color: white"
+            >NEW CITRA'S<br />ERA</span
+          >
+        </h1>
+      </div>
+    </div>
+
+    <div id="screen-gallery" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-gallery', 'screen-intro')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+      <div class="collect-badge">COLLECTION 1/1</div>
+
+      <h2
+        style="
+          font-family: var(--font-pixel);
+          margin-bottom: 20px;
+          color: var(--primary);
+        "
+      >
+        MEMORIES
+      </h2>
+      <div class="film-container">
+        <div class="film-strip">
+          <div class="photo-frame">
+            <img src="assets/IMG_20240323_173602.jpg" alt="1" />
+          </div>
+          <div class="photo-frame">
+            <img src="assets/IMG_20240624_124907.jpg" alt="2" />
+          </div>
+        </div>
+        <div class="film-strip">
+          <div class="photo-frame">
+            <img src="assets/IMG_20240507_165939.jpg" alt="3" />
+          </div>
+          <div class="photo-frame">
+            <img src="assets/IMG_20240405_191517.jpg" alt="4" />
+          </div>
+        </div>
+      </div>
+      <button
+        class="btn"
+        onclick="nextScreen('screen-gallery', 'screen-letter')"
+      >
+        READ MESSAGE <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <div id="screen-letter" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-letter', 'screen-gallery')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <h2
+        style="
+          color: white;
+          font-family: var(--font-pixel);
+          margin-bottom: 55px;
+        "
+      >
+        INCOMING MAIL
+      </h2>
+
+      <div class="envelope" id="envelopeItem" onclick="toggleLetter(event)">
+        <div class="envelope-flap"></div>
+        <div class="paper">
+          <div class="letter-content">
+            <strong
+              style="color: var(--primary); font-family: var(--font-pixel)"
+              >Dear Citra,</strong
+            ><br /><br />
+            Selamat Ulang Tahun yang ke-20!<br /><br />Terima kasih sudah
+            berjuang sejauh ini. Kamu hebat.<br /><br /><i>Make a wish?</i>
+          </div>
+
+          <button
+            type="button"
+            id="btnWish"
+            class="btn btn-pop"
+            style="
+              align-self: center;
+              margin-top: auto;
+              font-size: 0.8rem;
+              /* Style inline lain sudah kita pindahkan ke CSS atau tidak perlu diubah */
+            "
+            onclick="goToCake(event)"
+          >
+            MAKE A WISH 🎂
+          </button>
+        </div>
+      </div>
+      <p class="tap-hint">(Tap envelope to open/close)</p>
+    </div>
+
+    <div id="screen-cake" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-cake', 'screen-letter')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+      <h2
+        style="
+          font-family: var(--font-pixel);
+          color: var(--primary);
+          margin-bottom: 10px;
+        "
+      >
+        MAKE A WISH
+      </h2>
+      <div class="cam-border">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+      </div>
+      <div class="cake-area">
+        <img src="assets/cake_unlit.gif" class="cake-img" id="cakeImg" />
+        <img src="assets/match.gif" class="match-img" id="matchImg" />
+      </div>
+      <div class="status-pill" id="statusText">Waiting for camera...</div>
+      <button class="btn" id="startCamBtn" onclick="initExperience()">
+        START RITUAL
+      </button>
+    </div>
+
+    <div id="screen-photobooth" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-photobooth', 'screen-cake')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <div id="countdown-overlay">3</div>
+
+      <div class="photostrip-wrapper">
+        <div class="sticker s-1">👾</div>
+        <div class="sticker s-2">💙</div>
+
+        <div class="photostrip-inner" id="printable-area">
+          <div class="strip-header">PROJECT: 20</div>
+
+          <div
+            class="slot-container"
+            id="container-1"
+            onclick="activateSlot(1)"
+          >
+            <canvas
+              id="slot-1"
+              class="photo-slot active"
+              width="640"
+              height="480"
+            ></canvas>
+          </div>
+
+          <div
+            class="slot-container"
+            id="container-2"
+            onclick="activateSlot(2)"
+          >
+            <canvas
+              id="slot-2"
+              class="photo-slot"
+              width="640"
+              height="480"
+            ></canvas>
+          </div>
+
+          <div
+            class="slot-container"
+            id="container-3"
+            onclick="activateSlot(3)"
+          >
+            <canvas id="slot-3" class="photo-slot" width="640" height="480"
+              >s</canvas
+            >
+          </div>
+
+          <div
+            class="slot-container"
+            id="container-4"
+            onclick="activateSlot(4)"
+          >
+            <canvas
+              id="slot-4"
+              class="photo-slot"
+              width="640"
+              height="480"
+            ></canvas>
+          </div>
+
+          <div class="strip-footer">LEVEL 20 UNLOCKED!</div>
+        </div>
+      </div>
+
+      <video id="pb-video" autoplay playsinline style="display: none"></video>
+
+      <div class="btn-container">
+        <div
+          class="timer-option"
+          style="
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text);
+          "
+        >
+          <span style="font-size: 0.8rem; opacity: 0.8">No Timer</span>
+          <label class="switch">
+            <input
+              type="checkbox"
+              id="timerToggle"
+              onchange="updateButtonText()"
+            />
+            <span class="slider round"></span>
+          </label>
+          <span style="font-size: 0.8rem; font-weight: bold">3s Timer</span>
+        </div>
+
+        <button class="btn btn-pop" id="snapBtn" onclick="handleSnap()">
+          📸 SNAP #<span id="slotNumDisplay">1</span>
+        </button>
+
+        <div
+          id="saveOptions"
+          style="
+            display: none;
+            flex-direction: row;
+            gap: 8px;
+            width: 100%;
+            align-items: center;
+            margin-top: 5px;
+          "
+        >
+          <button
+            class="btn"
+            style="background: #1a1a1a; color: #fff200"
+            onclick="downloadStripHighQuality()"
+          >
+            💾 <span>SAVE IMG (HD)</span>
+          </button>
+
+          <button
+            class="btn"
+            style="background: #ff0055; color: white"
+            onclick="createAndDownloadGIF()"
+          >
+            🎞️ <span>SAVE GIF (HD)</span>
+          </button>
+
+          <button
+            class="btn"
+            style="background-color: var(--secondary); color: white"
+            onclick="resetPhotobooth()"
+          >
+            🔄 <span>RESET</span>
+          </button>
+        </div>
+
+        <button
+          class="btn"
+          onclick="nextScreen('screen-photobooth', 'screen-flower')"
+          style="margin-top: 10px"
+        >
+          SEE GIFT<i class="fas fa-gift"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-flower" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-flower', 'screen-photobooth')"
+        style="z-index: 100"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <div class="flower-overlay">
+        <h1 class="flower-title">Keep Blooming<br />Citra!</h1>
+        <p class="flower-subtitle">
+          Hope your days are as colorful as these flowers.
+        </p>
+        <button
+          class="btn"
+          onclick="nextScreen('screen-flower', 'screen-fireworks')"
+          style="
+            position: absolute;
+            margin-bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+          "
+        >
+          See surprise✨
+        </button>
+      </div>
+
+      <div class="night"></div>
+      <div class="flowers">
+        <div class="flower flower--1">
+          <div class="flower__leafs flower__leafs--1">
+            <div class="flower__leaf flower__leaf--1"></div>
+            <div class="flower__leaf flower__leaf--2"></div>
+            <div class="flower__leaf flower__leaf--3"></div>
+            <div class="flower__leaf flower__leaf--4"></div>
+            <div class="flower__white-circle"></div>
+            <div class="flower__light flower__light--1"></div>
+            <div class="flower__light flower__light--2"></div>
+            <div class="flower__light flower__light--3"></div>
+            <div class="flower__light flower__light--4"></div>
+            <div class="flower__light flower__light--5"></div>
+            <div class="flower__light flower__light--6"></div>
+            <div class="flower__light flower__light--7"></div>
+            <div class="flower__light flower__light--8"></div>
+          </div>
+          <div class="flower__line">
+            <div class="flower__line__leaf flower__line__leaf--1"></div>
+            <div class="flower__line__leaf flower__line__leaf--2"></div>
+            <div class="flower__line__leaf flower__line__leaf--3"></div>
+            <div class="flower__line__leaf flower__line__leaf--4"></div>
+            <div class="flower__line__leaf flower__line__leaf--5"></div>
+            <div class="flower__line__leaf flower__line__leaf--6"></div>
+          </div>
+        </div>
+
+        <div class="flower flower--2">
+          <div class="flower__leafs flower__leafs--2">
+            <div class="flower__leaf flower__leaf--1"></div>
+            <div class="flower__leaf flower__leaf--2"></div>
+            <div class="flower__leaf flower__leaf--3"></div>
+            <div class="flower__leaf flower__leaf--4"></div>
+            <div class="flower__white-circle"></div>
+            <div class="flower__light flower__light--1"></div>
+            <div class="flower__light flower__light--2"></div>
+            <div class="flower__light flower__light--3"></div>
+            <div class="flower__light flower__light--4"></div>
+            <div class="flower__light flower__light--5"></div>
+            <div class="flower__light flower__light--6"></div>
+            <div class="flower__light flower__light--7"></div>
+            <div class="flower__light flower__light--8"></div>
+          </div>
+          <div class="flower__line">
+            <div class="flower__line__leaf flower__line__leaf--1"></div>
+            <div class="flower__line__leaf flower__line__leaf--2"></div>
+            <div class="flower__line__leaf flower__line__leaf--3"></div>
+            <div class="flower__line__leaf flower__line__leaf--4"></div>
+          </div>
+        </div>
+
+        <div class="flower flower--3">
+          <div class="flower__leafs flower__leafs--3">
+            <div class="flower__leaf flower__leaf--1"></div>
+            <div class="flower__leaf flower__leaf--2"></div>
+            <div class="flower__leaf flower__leaf--3"></div>
+            <div class="flower__leaf flower__leaf--4"></div>
+            <div class="flower__white-circle"></div>
+            <div class="flower__light flower__light--1"></div>
+            <div class="flower__light flower__light--2"></div>
+            <div class="flower__light flower__light--3"></div>
+            <div class="flower__light flower__light--4"></div>
+            <div class="flower__light flower__light--5"></div>
+            <div class="flower__light flower__light--6"></div>
+            <div class="flower__light flower__light--7"></div>
+            <div class="flower__light flower__light--8"></div>
+          </div>
+          <div class="flower__line">
+            <div class="flower__line__leaf flower__line__leaf--1"></div>
+            <div class="flower__line__leaf flower__line__leaf--2"></div>
+            <div class="flower__line__leaf flower__line__leaf--3"></div>
+            <div class="flower__line__leaf flower__line__leaf--4"></div>
+          </div>
+        </div>
+
+        <div class="grow-ans" style="--d: 1.2s">
+          <div class="flower__g-long">
+            <div class="flower__g-long__top"></div>
+            <div class="flower__g-long__bottom"></div>
+          </div>
+        </div>
+
+        <div class="growing-grass">
+          <div class="flower__grass flower__grass--1">
+            <div class="flower__grass--top"></div>
+            <div class="flower__grass--bottom"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--1"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--2"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--3"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--4"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--5"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--6"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--7"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--8"></div>
+            <div class="flower__grass__overlay"></div>
+          </div>
+        </div>
+
+        <div class="growing-grass">
+          <div class="flower__grass flower__grass--2">
+            <div class="flower__grass--top"></div>
+            <div class="flower__grass--bottom"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--1"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--2"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--3"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--4"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--5"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--6"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--7"></div>
+            <div class="flower__grass__leaf flower__grass__leaf--8"></div>
+            <div class="flower__grass__overlay"></div>
+          </div>
+        </div>
+
+        <div class="grow-ans" style="--d: 2.4s">
+          <div class="flower__g-right flower__g-right--1">
+            <div class="leaf"></div>
+          </div>
+        </div>
+
+        <div class="grow-ans" style="--d: 2.8s">
+          <div class="flower__g-right flower__g-right--2">
+            <div class="leaf"></div>
+          </div>
+        </div>
+
+        <div class="grow-ans" style="--d: 2.8s">
+          <div class="flower__g-front">
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--1"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--2"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--3"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--4"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--5"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--6"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--7"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div
+              class="flower__g-front__leaf-wrapper flower__g-front__leaf-wrapper--8"
+            >
+              <div class="flower__g-front__leaf"></div>
+            </div>
+            <div class="flower__g-front__line"></div>
+          </div>
+        </div>
+
+        <div class="grow-ans" style="--d: 3.2s">
+          <div class="flower__g-fr">
+            <div class="leaf"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--1"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--2"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--3"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--4"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--5"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--6"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--7"></div>
+            <div class="flower__g-fr__leaf flower__g-fr__leaf--8"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--0">
+          <div class="grow-ans" style="--d: 3s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 2.2s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.4s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.6s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--1">
+          <div class="grow-ans" style="--d: 3.6s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.8s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.2s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--2">
+          <div class="grow-ans" style="--d: 4s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.2s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.4s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.6s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--3">
+          <div class="grow-ans" style="--d: 4s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.2s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.6s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--4">
+          <div class="grow-ans" style="--d: 4s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.2s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.6s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--5">
+          <div class="grow-ans" style="--d: 4s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.2s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.6s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--6">
+          <div class="grow-ans" style="--d: 4.2s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.4s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.6s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 4.8s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+
+        <div class="long-g long-g--7">
+          <div class="grow-ans" style="--d: 3s">
+            <div class="leaf leaf--0"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.2s">
+            <div class="leaf leaf--1"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.5s">
+            <div class="leaf leaf--2"></div>
+          </div>
+          <div class="grow-ans" style="--d: 3.6s">
+            <div class="leaf leaf--3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-fireworks" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-fireworks', 'screen-flower')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <div
+        style="
+          position: absolute;
+          top: 40px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 20;
+          text-align: center;
+          width: 100%;
+          pointer-events: none;
+        "
+      >
+        <h1
+          style="
+            font-family: 'Pixelify Sans', cursive;
+            color: white;
+            text-shadow: 2px 2px 0px #000;
+            font-size: 2rem;
+          "
+        ></h1>
+      </div>
+
+      <iframe
+        id="frame-fireworks"
+        data-src="fireworks/fireworks.html"
+        src=""
+        class="fireworks-frame"
+      ></iframe>
+      <div class="btn-container">
+        <button
+          class="btn"
+          onclick="nextScreen('screen-fireworks', 'screen-capsule')"
+          style="margin-bottom: 5px"
+        >
+          HAPPY NEW YEAR🎆<br />NEXT CREATE FUTURE MESSAGE
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-capsule" class="screen hidden">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-capsule', 'screen-fireworks')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <div class="terminal-container" id="capture-area">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <span class="cmd-title">FUTURE_MSG.EXE</span>
+            <div class="win-btns">
+              <span class="btn-dot red"></span>
+              <span class="btn-dot yellow"></span>
+              <span class="btn-dot green"></span>
+            </div>
+          </div>
+
+          <div class="terminal-body">
+            <div class="meta-info">
+              <p>> TARGET: CITRA (LEVEL 25)</p>
+              <p>> DATE: <span id="currentDate"></span></p>
+              <p>> STATUS: ENCRYPTED 🔒</p>
+            </div>
+
+            <hr class="dashed-line" />
+
+            <textarea
+              id="futureNote"
+              placeholder="Tulis harapanmu..."
+            ></textarea>
+
+            <div id="futureNote-print" class="note-print-view"></div>
+
+            <div class="signature">
+              <p>FROM: CITRA (LEVEL 20)</p>
+              <p class="keep-safe">/* KEEP SAFE UNTIL 2030 */</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="capsule-controls">
+        <button class="btn-main" onclick="saveCapsule()">
+          <i class="fas fa-save"></i> SIMPAN KAPSUL WAKTU
+        </button>
+      </div>
+      <button
+        class="btn"
+        onclick="nextScreen('screen-capsule', 'screen-music')"
+      >
+        A Song
+      </button>
+    </div>
+
+    <div id="screen-music" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-music', 'screen-capsule')"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <div class="vinyl-container">
+        <div class="vinyl-disk">
+          <div class="vinyl-label">
+            <i class="fas fa-music" style="font-size: 2rem"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="music-info">
+        <h2 style="font-family: var(--font-pixel); font-size: 2rem">
+          NOW PLAYING
+        </h2>
+        <p>LEE SUHYUN - Your Letter<br />(연의 편지)</p>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="controls">
+          <i class="fas fa-backward"></i>
+          <i
+            class="fas fa-pause"
+            onclick="toggleMusic()"
+            style="cursor: pointer"
+          ></i>
+          <i class="fas fa-forward"></i>
+        </div>
+      </div>
+
+      <button class="btn" onclick="nextScreen('screen-music', 'screen-planet')">
+        See Planet🪐
+      </button>
+    </div>
+
+    <div id="screen-planet" class="screen">
+      <button
+        class="btn-back"
+        onclick="prevScreen('screen-planet', 'screen-music')"
+        style="z-index: 100"
+      >
+        <i class="fas fa-arrow-left"></i> BACK
+      </button>
+
+      <div
+        style="
+          position: absolute;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 20;
+          text-align: center;
+          width: 100%;
+          pointer-events: none;
+        "
+      >
+        <h2
+          style="
+            font-family: 'Pixelify Sans', cursive;
+            color: white;
+            text-shadow: 2px 2px 0px #000;
+            font-size: 2rem;
+          "
+        >
+          YOUR FAVORITE PLANET
+        </h2>
+      </div>
+
+      <iframe
+        id="frame-planet"
+        data-src="saturn/Saturnus.html"
+        src=""
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+          z-index: 1;
+        "
+        allow="camera"
+      ></iframe>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="main.js"></script>
+    <script src="scriptmain.js"></script>
+  </body>
+</html>
